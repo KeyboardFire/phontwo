@@ -18,11 +18,11 @@
 
 package com.keyboardfire.phontwo;
 
+import java.util.Timer;
+import java.util.TimerTask;
 import android.view.*;
 import android.view.inputmethod.*;
 import android.inputmethodservice.*;
-
-import android.util.Log;
 
 public class Phontwo extends InputMethodService
         implements KeyboardView.OnKeyboardActionListener {
@@ -45,7 +45,7 @@ public class Phontwo extends InputMethodService
     private KeyboardLayer mainKeyboard;
     private KeyboardLayer currentKeyboard;
 
-    private long pressTime;
+    private Timer longPressTimer = new Timer();
 
     @Override public void onCreate() {
         super.onCreate();
@@ -75,10 +75,7 @@ public class Phontwo extends InputMethodService
         // currentKeyboard.setImeOptions(getResources(), attr.imeOptions);
     }
 
-    @Override public void onPress(int kc) {
-        pressTime = System.currentTimeMillis();
-    }
-    @Override public void onRelease(int kc) {
+    @Override public void onPress(final int kc) {
         switch (kc) {
             case 59:
                 if (composing.length() > 0) {
@@ -97,11 +94,21 @@ public class Phontwo extends InputMethodService
                 sendRawKey(KeyEvent.KEYCODE_ENTER);
                 break;
             default:
-                final long deltaTime = System.currentTimeMillis() - pressTime;
-                commit();
-                composing.append(keyData[kc][deltaTime > 200 ? 1 : 0]);
+                commit();  // TODO only when necessary (diacritics)
+                composing.append(keyData[kc][0]);
                 getCurrentInputConnection().setComposingText(composing, 1);
+                longPressTimer.schedule(new TimerTask() {
+                    public void run() {
+                        composing.setLength(composing.length() - 1);
+                        composing.append(keyData[kc][1]);
+                        getCurrentInputConnection().setComposingText(composing, 1);
+                    }
+                }, 200);
         }
+    }
+    @Override public void onRelease(int kc) {
+        longPressTimer.cancel();
+        longPressTimer = new Timer();
     }
 
     @Override public void onText(CharSequence text) {

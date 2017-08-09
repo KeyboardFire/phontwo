@@ -18,14 +18,36 @@
 
 package com.keyboardfire.phontwo;
 
+import java.util.List;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.inputmethodservice.*;
+import android.graphics.*;
 
 public class KeyboardLayerView extends KeyboardView {
 
     public KeyboardLayerView(Context context, AttributeSet attrs) {
         super(context, attrs);
+        setPreviewEnabled(false);
+    }
+
+    @Override public void onDraw(Canvas canvas) {
+        List<Keyboard.Key> keys = getKeyboard().getKeys();
+        for (Keyboard.Key key : keys) {
+            Paint paint = new Paint();
+            paint.setTextAlign(Paint.Align.CENTER);
+            paint.setTextSize(12);
+            paint.setColor(Color.WHITE);
+
+            final String label = key.label.toString();
+
+            Rect bounds = new Rect();
+            paint.getTextBounds(label, 0, label.length(), bounds);
+
+            canvas.drawText(label, key.x + (key.width / 2),
+                    key.y + key.height / 2 + (key.height - bounds.bottom) / 4,
+                    paint);
+        }
     }
 
 }
