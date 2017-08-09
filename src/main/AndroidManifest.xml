@@ -2,7 +2,7 @@
           package="com.keyboardfire.phontwo">
     <application android:label="@string/kbd_name">
 
-        <service android:name="phontwo"
+        <service android:name="Phontwo"
                  android:permission="android.permission.BIND_INPUT_METHOD">
             <intent-filter>
                 <action android:name="android.view.InputMethod" />
